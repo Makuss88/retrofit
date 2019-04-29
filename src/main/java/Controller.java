@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.List;
 
 import com.google.gson.Gson;
@@ -5,9 +6,10 @@ import com.google.gson.GsonBuilder;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
+
 import retrofit2.*;
 
-public class Controller {
+public class Controller implements Callback<List<String>> {
 
     String BASE_URL = "https://be.wizzair.com/9.9.0/Api/search/search/";
 
@@ -27,21 +29,26 @@ public class Controller {
 
         FlyApi flyApi = retrofit.create(FlyApi.class);
 
-        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"),json);
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), json);
 
-        flyApi.loadFly(requestBody).enqueue(new Callback<List<Fly>>() {
+        Call<RequestBody> call = flyApi.postSearch(requestBody);
 
-            @Override
-            public void onResponse(Call<List<Fly>> call, Response<List<Fly>> response) {
-                response.body().toString();
-            }
-
-            @Override
-            public void onFailure(Call<List<Fly>> call, Throwable t) {
-
-            }
-        });
+        System.out.println(call);
 
     }
 
+    @Override
+    public void onResponse(Call<List<String>> call, Response<List<String>> response) {
+        if (response.isSuccessful()) {
+            List<String> changesList = response.body();
+            changesList.forEach(change -> System.out.println(change));
+        } else {
+            System.out.println(response.errorBody());
+        }
+    }
+
+    @Override
+    public void onFailure(Call<List<String>> call, Throwable t) {
+        t.printStackTrace();
+    }
 }
